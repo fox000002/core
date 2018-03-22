@@ -16,6 +16,7 @@ use OC\NavigationManager;
 use OCP\App\IAppManager;
 use OCP\IGroupManager;
 use OCP\IL10N;
+use OCP\ISubAdminManager;
 use OCP\IURLGenerator;
 use OCP\IUser;
 use OCP\IUserSession;
@@ -168,7 +169,7 @@ class NavigationManagerTest extends TestCase {
 	/**
 	 * @dataProvider providesNavigationConfig
 	 */
-	public function testWithAppManager($expected, $config, $isAdmin = false) {
+	public function testWithAppManager($expected, $config, $isAdmin = false, $isSubAdmin = false) {
 
 		$appManager = $this->createMock(IAppManager::class);
 		$urlGenerator = $this->createMock(IURLGenerator::class);
@@ -192,7 +193,10 @@ class NavigationManagerTest extends TestCase {
 		$user = $this->createMock(IUser::class);
 		$user->expects($this->any())->method('getUID')->willReturn('user001');
 		$userSession->expects($this->any())->method('getUser')->willReturn($user);
+		$subAdminManager = $this->createMock(ISubAdminManager::class);
+		$subAdminManager->expects($this->any())->method('isSubAdmin')->willReturn($isSubAdmin);
 		$groupManager->expects($this->any())->method('isAdmin')->willReturn($isAdmin);
+		$groupManager->expects($this->any())->method('getSubAdmin')->willReturn($subAdminManager);
 
 		$navigationManager = new NavigationManager($appManager, $urlGenerator, $l10nFac, $userSession, $groupManager);
 
@@ -218,7 +222,23 @@ class NavigationManagerTest extends TestCase {
 				'name' => 'Test',
 				'active' => false
 			]], ['navigation' => ['@attributes' => ['role' => 'admin'], 'route' => 'test.page.index']], true],
-			'admin' => [[], ['navigation' => ['@attributes' => ['role' => 'admin'], 'route' => 'test.page.index']]]
+			'admin' => [[], ['navigation' => ['@attributes' => ['role' => 'admin'], 'route' => 'test.page.index']]],
+			'testAdmin' => [[[
+				'id' => 'test',
+				'order' => 100,
+				'href' => '/apps/test/',
+				'icon' => '/apps/test/img/app.svg',
+				'name' => 'Test',
+				'active' => false
+			]], ['navigation' => ['@attributes' => ['role' => 'admin,sub-admin'], 'route' => 'test.page.index']], true],
+			'testSubadmin' => [[[
+				'id' => 'test',
+				'order' => 100,
+				'href' => '/apps/test/',
+				'icon' => '/apps/test/img/app.svg',
+				'name' => 'Test',
+				'active' => false
+			]], ['navigation' => ['@attributes' => ['role' => 'admin,sub-admin'], 'route' => 'test.page.index']], false, true]
 		];
 	}
 }
