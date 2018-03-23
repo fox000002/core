@@ -141,7 +141,8 @@ class NavigationManager implements INavigationManager {
 				continue;
 			}
 			$nav = $info['navigation'];
-			if (!isset($nav['route'])) {
+			// handle pure frontend apps here
+			if (!isset($nav['route']) && !isset($info['frontend'])) {
 				continue;
 			}
 			$role = isset($nav['@attributes']['role']) ? $nav['@attributes']['role'] : 'all';
@@ -153,7 +154,15 @@ class NavigationManager implements INavigationManager {
 			}
 			$l = $this->l10nFac->get($app);
 			$order = isset($nav['order']) ? $nav['order'] : 100;
-			$route = $this->urlGenerator->linkToRoute($nav['route']);
+			if (isset($nav['route'])) {
+				$route = $this->urlGenerator->linkToRoute($nav['route']);
+			} else {
+				$html = 'index.html';
+				if (isset($info['frontend']['@attributes']['template'])) {
+					$html = $info['frontend']['@attributes']['template'];
+				}
+				$route = $this->urlGenerator->linkTo($app, $html);
+			}
 			$name = isset($nav['name']) ? $nav['name'] : ucfirst($app);
 			$icon = isset($nav['icon']) ? $nav['icon'] : 'app.svg';
 			$iconPath = null;
