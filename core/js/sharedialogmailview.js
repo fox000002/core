@@ -118,9 +118,7 @@
 							message: result.data.message
 						});
 					} else {
-						setTimeout(function() {
-							deferred.resolve();
-						}, 2000)
+						deferred.resolve();
 					}
 			}).fail(function(error) {
 				return deferred.reject();
