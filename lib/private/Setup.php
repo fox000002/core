@@ -373,15 +373,42 @@ class Setup {
 			Setup::updateHtaccess();
 			Setup::protectDataDirectory();
 
-			//try to write logtimezone
+			// try to write logtimezone
 			if (date_default_timezone_get()) {
 				$config->setSystemValue('logtimezone', date_default_timezone_get());
 			}
 
 			self::installBackgroundJobs();
 
-			//and we are done
 			$config->setSystemValue('installed', true);
+
+			// adding the apps2 directory by default using apps_path
+			$appsDir = \OC::$SERVERROOT . '/apps';
+			$apps2Dir = \OC::$SERVERROOT . '/apps2';
+			(bool)$apps2Key = \OC::$server->getSystemConfig()->getValue('apps_paths', false);
+			
+			// add the key only if it doea not existent (protect possible overwriting)
+			if (!$apps2Key) {
+				$z = array(
+					'apps_path' => array(
+						0 => array(
+							"path" => $appsDir,
+							"url" => "/apps",
+							"writable" => "false"
+							),
+					    1 => array(
+							"path" => $apps2Dir,
+							"url" => "/apps2",
+							"writable" => "true"
+							)
+					)
+				);
+					    
+				$config->setSystemValues($z);
+			}
+
+			// finished initial setup
+			
 		}
 
 		return $error;
